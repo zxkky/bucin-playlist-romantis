@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playlist Untukmu 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #ff6b9d; --blush: #ffb3cc; --plum: #8b2fc9; --mauve: #c77dff;
+    --cream: #fff5f8; --text: #1a0a14; --card: rgba(255,255,255,0.85);
+    --glass: rgba(255,255,255,0.15); --shadow: 0 8px 40px rgba(139,47,201,0.18);
+    --bg1: #fff0f5; --bg2: #f5e6ff;
+  }
+  [data-theme="dark"] {
+    --cream: #120818; --text: #ffe0f0; --card: rgba(30,10,40,0.85);
+    --glass: rgba(255,255,255,0.07); --bg1: #0d0414; --bg2: #1a0826; --blush: #c2527a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--bg1); color: var(--text);
+    min-height: 100vh; overflow-x: hidden; transition: background 0.4s, color 0.4s;
+  }
+  .mesh {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(255,107,157,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 70% at 80% 80%, rgba(139,47,201,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(199,125,255,0.1) 0%, transparent 70%);
+  }
+  .page { display:none; position:relative; z-index:1; min-height:100vh; }
+  .page.active { display:flex; flex-direction:column; }
+  .topbar {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px; background: var(--glass); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,107,157,0.12);
+  }
+  .topbar-logo { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--rose); letter-spacing: 0.02em; }
+  .theme-btn {
+    background: var(--glass); border: 1px solid rgba(255,107,157,0.3); border-radius: 50px;
+    padding: 6px 14px; color: var(--text); cursor: pointer; font-size: 0.8rem; transition: all 0.3s;
+  }
+  .theme-btn:hover { background: rgba(255,107,157,0.2); }
+  #landing { justify-content: center; align-items: center; text-align: center; padding: 20px; }
+  .landing-inner { animation: fadeUp 1s ease both; }
+  .heart-ring {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose), var(--plum));
+    display: flex; align-items:center; justify-content:center; margin: 0 auto 32px;
+    box-shadow: 0 0 60px rgba(255,107,157,0.5), 0 0 120px rgba(139,47,201,0.3);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  .heart-ring span { font-size: 3.5rem; }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 60px rgba(255,107,157,0.5); }
+    50% { transform: scale(1.06); box-shadow: 0 0 80px rgba(255,107,157,0.7), 0 0 140px rgba(139,47,201,0.4); }
+  }
+  .landing-title {
+    font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 7vw, 4.5rem);
+    font-style: italic; line-height: 1.1;
+    background: linear-gradient(135deg, var(--rose), var(--mauve));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px;
+  }
+  .landing-sub { font-size: 1rem; color: var(--blush); font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .landing-name { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 4vw, 2.2rem); color: var(--text); margin-bottom: 36px; }
+  .btn-main {
+    display: inline-flex; align-items:center; gap: 10px;
+    background: linear-gradient(135deg, var(--rose), var(--plum)); color: white; border: none;
+    padding: 16px 40px; border-radius: 50px; font-size: 1rem; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; cursor: pointer; letter-spacing: 0.03em;
+    box-shadow: 0 8px 30px rgba(255,107,157,0.4); transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .btn-main::after { content:''; position:absolute; inset:0; background: white; opacity:0; transition:0.3s; }
+  .btn-main:hover { transform:translateY(-3px); box-shadow: 0 12px 40px rgba(255,107,157,0.6); }
+  .btn-main:hover::after { opacity:0.08; }
+  .floating-notes { position: absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .note { position: absolute; font-size: 1.5rem; opacity: 0; animation: floatNote linear infinite; }
+  @keyframes floatNote {
+    0% { transform: translateY(100vh) rotate(0deg); opacity:0; }
+    10% { opacity:0.5; } 90% { opacity:0.3; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity:0; }
+  }
+  #playlist { padding-top: 72px; padding-bottom: 160px; }
+  .playlist-header { padding: 40px 24px 24px; text-align: center; }
+  .playlist-header h2 {
+    font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 5vw, 3rem);
+    font-style: italic; background: linear-gradient(135deg, var(--rose), var(--mauve));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;
+  }
+  .playlist-header p { color: var(--blush); font-size:0.9rem; }
+  .songs-list { padding: 0 16px; display: flex; flex-direction:column; gap:12px; max-width: 680px; margin: 0 auto; }
+  .song-card {
+    background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255,107,157,0.15);
+    border-radius: 18px; padding: 16px; display: flex; align-items:center; gap:14px;
+    cursor: pointer; transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    position: relative; overflow:hidden; box-shadow: var(--shadow); animation: fadeUp 0.6s ease both;
+  }
+  .song-card::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,107,157,0.08), rgba(139,47,201,0.05));
+    opacity:0; transition:0.3s;
+  }
+  .song-card:hover { transform:translateX(6px) translateY(-2px); box-shadow:0 12px 50px rgba(255,107,157,0.25); }
+  .song-card:hover::before { opacity:1; }
+  .song-card.active-song { border-color: var(--rose); box-shadow: 0 0 30px rgba(255,107,157,0.3); }
+  .song-cover {
+    width: 60px; height: 60px; flex-shrink:0; border-radius: 12px; font-size: 2rem;
+    display: flex; align-items:center; justify-content:center; position: relative;
+  }
+  .song-cover-bg { position:absolute; inset:0; border-radius:12px; opacity:0.85; }
+  .song-cover span { position:relative; z-index:1; }
+  .playing-indicator { position:absolute; bottom:4px; right:4px; display:flex; gap:2px; align-items:flex-end; }
+  .bar { width:3px; border-radius:2px; background:white; animation: equalize 0.8s ease-in-out infinite alternate; }
+  .bar:nth-child(1){ height:8px; animation-delay:0s; }
+  .bar:nth-child(2){ height:14px; animation-delay:0.2s; }
+  .bar:nth-child(3){ height:10px; animation-delay:0.4s; }
+  @keyframes equalize { to { height:4px; } }
+  .song-info { flex:1; min-width:0; }
+  .song-title {
+    font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:3px;
+  }
+  .song-artist { font-size:0.8rem; color:var(--blush); }
+  .song-duration { font-size:0.75rem; color:var(--blush); margin-top:4px; }
+  .song-actions { display:flex; gap:8px; align-items:center; flex-shrink:0; }
+  .btn-play {
+    width:42px; height:42px; border-radius:50%;
+    background: linear-gradient(135deg, var(--rose), var(--plum)); border:none; color:white;
+    font-size:1.1rem; cursor:pointer; transition:all 0.3s;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 4px 15px rgba(255,107,157,0.4);
+  }
+  .btn-play:hover { transform:scale(1.1); }
+  .btn-story {
+    padding:6px 12px; border-radius:20px; background:var(--glass);
+    border:1px solid rgba(255,107,157,0.3); color:var(--rose); font-size:0.75rem;
+    cursor:pointer; transition:all 0.3s; font-family:'DM Sans',sans-serif; white-space:nowrap;
+  }
+  .btn-story:hover { background:rgba(255,107,157,0.15); }
+  #story { padding-top:72px; padding-bottom:160px; align-items:center; }
+  .story-inner { max-width:600px; width:100%; margin:0 auto; padding:24px 20px; }
+  .story-back {
+    display:inline-flex; align-items:center; gap:6px; color:var(--blush); font-size:0.85rem;
+    background:none; border:none; cursor:pointer; margin-bottom:28px;
+    font-family:'DM Sans',sans-serif; transition:color 0.2s;
+  }
+  .story-back:hover { color:var(--rose); }
+  .story-cover-big {
+    width:160px; height:160px; border-radius:24px; font-size:4rem;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 24px; position:relative;
+    box-shadow: 0 20px 60px rgba(255,107,157,0.3); animation: storyCover 0.6s ease both;
+  }
+  @keyframes storyCover { from { transform:scale(0.8) rotate(-5deg); opacity:0; } to{transform:scale(1) rotate(0deg);opacity:1;} }
+  .story-song-title {
+    font-family:'Playfair Display',serif; font-size:clamp(1.6rem,4vw,2.2rem);
+    text-align:center; margin-bottom:4px; animation:fadeUp 0.5s 0.2s ease both;
+  }
+  .story-artist { text-align:center; color:var(--blush); font-size:0.9rem; margin-bottom:32px; animation:fadeUp 0.5s 0.3s ease both; }
+  .story-text-box {
+    background:var(--card); backdrop-filter:blur(20px); border:1px solid rgba(255,107,157,0.15);
+    border-radius:20px; padding:28px; margin-bottom:24px; box-shadow:var(--shadow);
+    animation:fadeUp 0.5s 0.4s ease both; position:relative; overflow:hidden;
+  }
+  .story-text-box::before {
+    content:'"'; position:absolute; top:-10px; left:16px; font-family:'Playfair Display',serif;
+    font-size:6rem; color:var(--rose); opacity:0.12; line-height:1;
+  }
+  .story-text { font-size:1rem; line-height:1.8; color:var(--text); font-weight:300; position:relative; z-index:1; }
+  .cursor { display:inline-block; width:2px; height:1em; background:var(--rose); animation:blink 0.8s step-end infinite; vertical-align:text-bottom; }
+  @keyframes blink { 50%{opacity:0;} }
+  .story-memory {
+    background:var(--card); backdrop-filter:blur(20px); border:1px solid rgba(255,107,157,0.15);
+    border-radius:20px; padding:24px; text-align:center; animation:fadeUp 0.5s 0.5s ease both;
+    box-shadow:var(--shadow); margin-bottom:20px;
+  }
+  .story-memory .label { font-size:0.75rem; color:var(--blush); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px; }
+  .story-memory .date { font-family:'Playfair Display',serif; font-size:1.3rem; }
+  #memories { padding-top:72px; padding-bottom:80px; }
+  .mem-header { padding:40px 24px 0; text-align:center; }
+  .mem-header h2 {
+    font-family:'Playfair Display',serif; font-size:clamp(1.8rem,5vw,3rem); font-style:italic;
+    background:linear-gradient(135deg,var(--rose),var(--mauve));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px;
+  }
+  .mem-header p { color:var(--blush); font-size:0.9rem; margin-bottom:32px; }
+  .timeline { max-width:600px; margin:0 auto; padding:0 20px; display:flex; flex-direction:column; gap:0; position:relative; }
+  .timeline::before {
+    content:''; position:absolute; left:28px; top:0; bottom:0; width:2px;
+    background: linear-gradient(to bottom, var(--rose), var(--plum));
+  }
+  .tl-item { display:flex; gap:20px; padding-bottom:36px; animation:fadeUp 0.5s ease both; }
+  .tl-dot {
+    width:56px; height:56px; flex-shrink:0; border-radius:50%;
+    background:linear-gradient(135deg,var(--rose),var(--plum));
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    box-shadow:0 0 20px rgba(255,107,157,0.4); z-index:1; border:3px solid var(--bg1);
+  }
+  .tl-content {
+    flex:1; background:var(--card); backdrop-filter:blur(20px);
+    border:1px solid rgba(255,107,157,0.15); border-radius:16px; padding:18px; box-shadow:var(--shadow);
+  }
+  .tl-date { font-size:0.75rem; color:var(--blush); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .tl-title { font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:6px; }
+  .tl-desc { font-size:0.9rem; color:var(--blush); line-height:1.6; }
+  .nav-memory { text-align:center; margin-top:16px; padding:0 20px 20px; }
+  #ending { justify-content:center; align-items:center; text-align:center; padding:20px; min-height:100vh; }
+  .ending-inner { animation:fadeUp 0.8s ease both; }
+  .ending-hearts { font-size:3rem; margin-bottom:24px; animation:heartBeat 1.5s ease-in-out infinite; }
+  @keyframes heartBeat { 0%,100%{transform:scale(1);} 14%{transform:scale(1.1);} 28%{transform:scale(1);} 42%{transform:scale(1.1);} 70%{transform:scale(1);} }
+  .ending-title {
+    font-family:'Playfair Display',serif; font-size:clamp(1.8rem,5vw,3.5rem); font-style:italic; line-height:1.2;
+    background:linear-gradient(135deg,var(--rose),var(--mauve));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:16px;
+  }
+  .ending-msg { font-size:1.05rem; color:var(--blush); line-height:1.7; max-width:420px; margin:0 auto 36px; font-weight:300; }
+  .btn-love {
+    display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--rose),var(--plum));
+    color:white; border:none; padding:18px 48px; border-radius:50px; font-size:1.1rem;
+    font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer;
+    box-shadow:0 8px 40px rgba(255,107,157,0.5); transition:all 0.3s; animation:pulse 2.5s ease-in-out infinite;
+  }
+  .btn-love:hover { transform:translateY(-4px) scale(1.03); }
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; z-index:100; background:var(--card);
+    backdrop-filter:blur(24px); border-top:1px solid rgba(255,107,157,0.15); padding:10px 20px; display:none;
+  }
+  .bottom-nav.show { display:block; }
+  .player { display:flex; align-items:center; gap:12px; max-width:800px; margin:0 auto; }
+  .player-thumb {
+    width:44px; height:44px; border-radius:10px; font-size:1.5rem;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative;
+  }
+  .player-thumb-bg { position:absolute;inset:0;border-radius:10px;opacity:0.85; }
+  .player-thumb span { position:relative;z-index:1; }
+  .player-info { flex:1; min-width:0; }
+  .player-title { font-family:'Playfair Display',serif; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .player-artist { font-size:0.7rem; color:var(--blush); }
+  .player-progress { width:100%; height:3px; margin-top:6px; position:relative; }
+  .progress-track { width:100%; height:3px; background:rgba(255,107,157,0.2); border-radius:2px; }
+  .progress-fill { height:3px; border-radius:2px; background:linear-gradient(to right,var(--rose),var(--mauve)); width:0%; transition:width 0.5s linear; }
+  .player-controls { display:flex; gap:8px; align-items:center; flex-shrink:0; }
+  .ctrl-btn { background:none; border:none; color:var(--blush); font-size:1rem; cursor:pointer; transition:all 0.2s; padding:4px; }
+  .ctrl-btn:hover { color:var(--rose); transform:scale(1.15); }
+  .ctrl-play {
+    width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--rose),var(--plum));
+    border:none; color:white; font-size:0.9rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(255,107,157,0.4); transition:all 0.3s;
+  }
+  .ctrl-play:hover { transform:scale(1.1); }
+  .nav-tabs { display:flex; justify-content:center; gap:8px; margin-top:10px; }
+  .nav-tab {
+    background:none; border:none; color:var(--blush); font-size:0.7rem; cursor:pointer;
+    padding:4px 12px; border-radius:20px; transition:all 0.3s; font-family:'DM Sans',sans-serif;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .nav-tab.active, .nav-tab:hover { background:rgba(255,107,157,0.15); color:var(--rose); }
+  .nav-tab .icon { font-size:1.1rem; }
+  @keyframes fadeUp { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  .no-display { display:none; }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="floating-notes" id="floatingNotes"></div>
+<div class="topbar" id="topbar" style="display:none">
+  <span class="topbar-logo">🎵 Playlist Untukmu</span>
+  <button class="theme-btn" onclick="toggleTheme()">🌙 Dark / ☀️ Light</button>
+</div>
+
+<!-- LANDING -->
+<div class="page active" id="landing">
+  <div style="position:absolute;top:16px;right:16px;z-index:10;">
+    <button class="theme-btn" onclick="toggleTheme()">🌙 / ☀️</button>
+  </div>
+  <div class="landing-inner" style="max-width:500px;width:100%;margin:auto;padding:20px;">
+    <div class="heart-ring"><span>💖</span></div>
+    <p class="landing-sub">Sebuah hadiah kecil untuk</p>
+    <h1 class="landing-title">Playlist Untukmu</h1>
+    <p class="landing-name" id="namePasangan">Sayangku ✨</p>
+    <p style="font-size:0.9rem;color:var(--blush);margin-bottom:32px;line-height:1.6;">
+      Setiap lagu di sini adalah perasaanku,<br>yang tak cukup terucap dengan kata-kata biasa.
+    </p>
+    <button class="btn-main" onclick="showPage('playlist')"><span>▶</span> Mulai Dengarkan</button>
+  </div>
+</div>
+
+<!-- PLAYLIST -->
+<div class="page" id="playlist">
+  <div class="playlist-header">
+    <h2>Lagu-lagu untuk Kamu</h2>
+    <p>6 lagu · setiap nada menyimpan cerita</p>
+  </div>
+  <div class="songs-list" id="songsList"></div>
+</div>
+
+<!-- STORY -->
+<div class="page" id="story">
+  <div class="story-inner">
+    <button class="story-back" onclick="showPage('playlist')">← Kembali ke Playlist</button>
+    <div class="story-cover-big" id="storyCover"></div>
+    <h2 class="story-song-title" id="storySongTitle"></h2>
+    <p class="story-artist" id="storyArtist"></p>
+    <div class="story-text-box"><p class="story-text" id="storyText"></p></div>
+    <div class="story-memory"><div class="label">✨ Kenangan Ini</div><div class="date" id="storyMemory"></div></div>
+    <button class="btn-main" style="width:100%;justify-content:center;" onclick="showPage('memories')">📅 Lihat Semua Kenangan</button>
+  </div>
+</div>
+
+<!-- MEMORIES -->
+<div class="page" id="memories">
+  <div class="mem-header">
+    <h2>Kenangan Kita</h2>
+    <p>Setiap momen yang membuat hatiku penuh</p>
+  </div>
+  <div class="timeline" id="timeline"></div>
+  <div class="nav-memory"><button class="btn-main" onclick="showPage('ending')">💖 Lihat Pesan Terakhir</button></div>
+</div>
+
+<!-- ENDING -->
+<div class="page" id="ending">
+  <div class="ending-inner">
+    <div class="ending-hearts">💕</div>
+    <h2 class="ending-title">Makasih udah ada<br>di hidupku</h2>
+    <p class="ending-msg">Dari semua playlist yang pernah ada,<br>kamu tetap jadi lagu favorit aku.<br>Selamanya.</p>
+    <button class="btn-love" onclick="loveClick()">❤️ Aku Sayang Kamu</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" id="bottomNav">
+  <div class="player">
+    <div class="player-thumb" id="playerThumb">
+      <div class="player-thumb-bg" id="playerThumbBg"></div>
+      <span id="playerThumbEmoji">🎵</span>
+    </div>
+    <div class="player-info">
+      <div class="player-title" id="playerTitle">Pilih lagu untuk diputar</div>
+      <div class="player-artist" id="playerArtist">—</div>
+      <div class="player-progress"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="prevSong()">⏮</button>
+      <button class="ctrl-play" id="ctrlPlay" onclick="togglePlay()">▶</button>
+      <button class="ctrl-btn" onclick="nextSong()">⏭</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="showPage('playlist')" id="tab-playlist"><span class="icon">🎶</span>Playlist</button>
+    <button class="nav-tab" onclick="showPage('story')" id="tab-story"><span class="icon">💌</span>Cerita</button>
+    <button class="nav-tab" onclick="showPage('memories')" id="tab-memories"><span class="icon">📅</span>Kenangan</button>
+    <button class="nav-tab" onclick="showPage('ending')" id="tab-ending"><span class="icon">💖</span>Pesan</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA LAGU ───
+const songs = [
+  {
+    id:0, emoji:'🌹', title:'Sempurna', artist:'Andra and The Backbone',
+    gradient:'linear-gradient(135deg,#e74c6b,#c0392b)', duration:'4:02',
+    story:'Lagu ini yang pertama kali bikin aku sadar kalau kamu beda. Waktu itu aku dengerin sambil mikirin kamu, dan tiba-tiba semua liriknya kayak tentang kamu. Kamu itu sempurna di mata aku, dengan segala kekurangan yang justru bikin aku makin sayang.',
+    memory:'Pertama kali kamu senyum ke aku 🌸',
+    audioUrl:'audio/sempurna.mp3'
+  },
+  {
+    id:1, emoji:'🌙', title:'Cinta Luar Biasa', artist:'Andmesh Kamaleng',
+    gradient:'linear-gradient(135deg,#6c5ce7,#a29bfe)', duration:'4:31',
+    story:'Setiap malam sebelum tidur, lagu ini yang aku puter. Bukan karena apa-apa, tapi karena liriknya ngewakilin banget gimana aku ngerasa. Cinta aku ke kamu emang luar biasa — nggak ada kata lain yang lebih pas.',
+    memory:'Malam kita ngobrol sampai subuh ☁️',
+    audioUrl:'audio/cinta-luar-biasa.mp3'
+  },
+  {
+    id:2, emoji:'🌸', title:'Kamu', artist:'Raisa',
+    gradient:'linear-gradient(135deg,#fd79a8,#e84393)', duration:'3:45',
+    story:'Waktu pertama kali dengerin lagu ini, aku langsung inget momen waktu kita jalan bareng. Langkah kamu, senyum kamu, semuanya kayak ada di sini. Kamu itu memang sumber semangat aku.',
+    memory:'Jalan bareng pertama kali ✨',
+    audioUrl:'audio/kamu-raisa.mp3'
+  },
+  {
+    id:3, emoji:'⭐', title:'Separuh Aku', artist:'Noah',
+    gradient:'linear-gradient(135deg,#fdcb6e,#e17055)', duration:'4:18',
+    story:'Ini lagu yang aku dengerin waktu kamu lagi jauh. Ada bagian yang bilang kamu udah jadi separuh hidupku — dan itu bener banget. Tanpa kamu, rasanya ada yang kurang setiap hari.',
+    memory:'Hari kamu pergi ke luar kota 🌤️',
+    audioUrl:'audio/separuh-aku.mp3'
+  },
+  {
+    id:4, emoji:'💫', title:'Jatuh Hati', artist:'Raisa',
+    gradient:'linear-gradient(135deg,#00cec9,#0984e3)', duration:'3:56',
+    story:'Waktu pertama kali jatuh hati ke kamu, aku nggak ngerti kenapa. Tapi lagu ini kayak ngejawab pertanyaan itu. Kadang cinta nggak perlu alasan — cukup ngerasa, dan udah cukup.',
+    memory:'Saat aku pertama sadar suka kamu 💭',
+    audioUrl:'audio/jatuh-hati.mp3'
+  },
+  {
+    id:5, emoji:'🎀', title:'Hingga Ujung Waktu', artist:'Sheila on 7',
+    gradient:'linear-gradient(135deg,#55efc4,#00b894)', duration:'4:55',
+    story:'Kalau ada satu lagu yang aku ingin dedikasiin sepenuh hati, ini dia. Aku ingin ada di sisi kamu, hingga akhir waktu. Bukan cuma kata-kata — tapi janji yang aku pegang setiap hari.',
+    memory:'Untuk setiap hari bersamamu 💚',
+    audioUrl:'audio/hingga-akhir-waktu.mp3'
+  }
+];
+
+const memories = [
+  { emoji:'☀️', date:'Awal Mula', title:'Pertama Kali Ketemu', desc:'Hari yang nggak akan pernah aku lupa. Kamu masuk, dan dunia tiba-tiba berasa beda.' },
+  { emoji:'💬', date:'Minggu Pertama', title:'Obrolan Pertama', desc:'Dari ngobrol biasa, pelan-pelan aku sadar ini bukan sekedar teman biasa.' },
+  { emoji:'🌸', date:'Satu Bulan', title:'Jalan Bareng Pertama', desc:'Nervous banget, tapi kamu bikin semuanya terasa mudah dan nyaman.' },
+  { emoji:'🌙', date:'Tiga Bulan', title:'Malam Paling Berkesan', desc:'Ngobrol sampai subuh, nggak kerasa waktu berlalu. Sejak itu aku tau kamu spesial.' },
+  { emoji:'💕', date:'Hari Ini', title:'Sekarang & Selamanya', desc:'Setiap hari bersamamu adalah kenangan baru yang aku syukuri.' }
+];
+
+// ─── STATE ───
+let currentSong = null;
+let isPlaying = false;
+let progress = 0;
+let progressTimer = null;
+let currentPage = 'landing';
+let audio = new Audio();
+
+// ─── INIT ───
+function init() {
+  renderSongs();
+  renderTimeline();
+  spawnNotes();
+  setupAudioEvents();
+}
+
+function setupAudioEvents() {
+  audio.addEventListener('timeupdate', () => {
+    if(audio.duration) {
+      progress = (audio.currentTime / audio.duration) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+    }
+  });
+  audio.addEventListener('ended', () => {
+    nextSong();
+  });
+  audio.addEventListener('error', (e) => {
+    console.warn('Audio error:', e);
+    document.getElementById('ctrlPlay').textContent = '⚠️';
+  });
+}
+
+function renderSongs() {
+  const list = document.getElementById('songsList');
+  list.innerHTML = songs.map((s,i) => `
+    <div class="song-card" id="card-${s.id}" style="animation-delay:${i*0.08}s" onclick="openStory(${s.id})">
+      <div class="song-cover">
+        <div class="song-cover-bg" style="background:${s.gradient}"></div>
+        <span>${s.emoji}</span>
+        <div class="playing-indicator" id="ind-${s.id}" style="display:none">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+      </div>
+      <div class="song-info">
+        <div class="song-title">${s.title}</div>
+        <div class="song-artist">${s.artist}</div>
+        <div class="song-duration">⏱ ${s.duration}</div>
+      </div>
+      <div class="song-actions">
+        <button class="btn-story" onclick="event.stopPropagation();openStory(${s.id})">💌 Cerita</button>
+        <button class="btn-play" onclick="event.stopPropagation();playSong(${s.id})">▶</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = memories.map((m,i) => `
+    <div class="tl-item" style="animation-delay:${i*0.1}s">
+      <div class="tl-dot">${m.emoji}</div>
+      <div class="tl-content">
+        <div class="tl-date">${m.date}</div>
+        <div class="tl-title">${m.title}</div>
+        <div class="tl-desc">${m.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── PAGES ───
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  currentPage = name;
+  const isLanding = name === 'landing';
+  document.getElementById('topbar').style.display = isLanding ? 'none' : 'flex';
+  document.getElementById('bottomNav').classList.toggle('show', !isLanding);
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.getElementById('tab-' + name);
+  if(activeTab) activeTab.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ─── STORY ───
+function openStory(id) {
+  const s = songs[id];
+  const cover = document.getElementById('storyCover');
+  cover.innerHTML = `<div style="position:absolute;inset:0;border-radius:24px;background:${s.gradient}"></div><span style="position:relative;z-index:1;font-size:4rem">${s.emoji}</span>`;
+  document.getElementById('storySongTitle').textContent = s.title;
+  document.getElementById('storyArtist').textContent = s.artist;
+  document.getElementById('storyMemory').textContent = s.memory;
+  const el = document.getElementById('storyText');
+  el.innerHTML = '';
+  typeText(el, s.story, 0);
+  playSong(id);
+  showPage('story');
+}
+
+function typeText(el, text, i) {
+  if(i < text.length) {
+    el.innerHTML = text.substring(0,i+1) + '<span class="cursor"></span>';
+    setTimeout(() => typeText(el, text, i+1), 22);
+  } else { el.innerHTML = text; }
+}
+
+// ─── PLAYER ───
+function playSong(id) {
+  const s = songs[id];
+  if(currentSong !== null) {
+    document.getElementById('card-' + currentSong)?.classList.remove('active-song');
+    document.getElementById('ind-' + currentSong).style.display = 'none';
+  }
+  currentSong = id;
+  isPlaying = true;
+  progress = 0;
+  document.getElementById('card-' + id)?.classList.add('active-song');
+  document.getElementById('ind-' + id).style.display = 'flex';
+  document.getElementById('playerThumbEmoji').textContent = s.emoji;
+  document.getElementById('playerThumbBg').style.background = s.gradient;
+  document.getElementById('playerTitle').textContent = s.title;
+  document.getElementById('playerArtist').textContent = s.artist;
+  document.getElementById('ctrlPlay').textContent = '⏸';
+  document.getElementById('progressFill').style.width = '0%';
+  
+  // 🔊 Play audio
+  if(audio.src !== s.audioUrl) {
+    audio.src = s.audioUrl;
+    audio.load();
+  }
+  audio.play().then(() => {
+    isPlaying = true;
+    document.getElementById('ctrlPlay').textContent = '⏸';
+    document.getElementById('ind-' + currentSong).style.display = 'flex';
+  }).catch(err => {
+    console.log('Playback needs user interaction:', err);
+    document.getElementById('ctrlPlay').textContent = '▶';
+  });
+}
+
+function togglePlay() {
+  if(currentSong === null) return;
+  if(audio.paused) {
+    audio.play().then(() => {
+      isPlaying = true;
+      document.getElementById('ctrlPlay').textContent = '⏸';
+      document.getElementById('ind-' + currentSong).style.display = 'flex';
+    }).catch(e => console.log('Play error:', e));
+  } else {
+    audio.pause();
+    isPlaying = false;
+    document.getElementById('ctrlPlay').textContent = '▶';
+    document.getElementById('ind-' + currentSong).style.display = 'none';
+  }
+}
+
+function nextSong() {
+  const next = currentSong === null ? 0 : (currentSong + 1) % songs.length;
+  playSong(next);
+}
+function prevSong() {
+  const prev = currentSong === null ? 0 : (currentSong - 1 + songs.length) % songs.length;
+  playSong(prev);
+}
+
+// ─── THEME ───
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ─── FLOATING NOTES ───
+function spawnNotes() {
+  const container = document.getElementById('floatingNotes');
+  const notes = ['♪','♫','♬','🎵','💕','✨','🌸','💖'];
+  for(let i=0;i<12;i++){
+    const el = document.createElement('div');
+    el.className = 'note';
+    el.textContent = notes[Math.floor(Math.random()*notes.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.animationDuration = (8+Math.random()*12)+'s';
+    el.style.animationDelay = (Math.random()*10)+'s';
+    el.style.fontSize = (1+Math.random()*1.2)+'rem';
+    container.appendChild(el);
+  }
+}
+
+// ─── LOVE BUTTON ───
+function loveClick() {
+  const btn = document.querySelector('.btn-love');
+  btn.textContent = '💖 Aku juga sayang kamu!';
+  btn.style.background = 'linear-gradient(135deg,#ff3d71,#a855f7)';
+  for(let i=0;i<20;i++){
+    const c = document.createElement('div');
+    c.style.cssText = `position:fixed;z-index:9999;font-size:${1.2+Math.random()}rem;left:${Math.random()*100}vw;top:${50+Math.random()*20}vh;animation:floatNote ${2+Math.random()*2}s ease both;pointer-events:none`;
+    c.textContent = ['💕','💖','✨','🌸','💗'][Math.floor(Math.random()*5)];
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 4000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
